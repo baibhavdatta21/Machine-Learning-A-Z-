@@ -1,0 +1,54 @@
+#Polynomial Regression
+
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+
+#Importing the dataset 
+
+dataset=pd.read_csv('Position_Salaries.csv')
+X=dataset.iloc[:,1:2].values
+y=dataset.iloc[:,2].values
+
+#No splitting of  the dataset required
+
+'''from sklearn.model_selection import train_test_split
+X_train,X_test ,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=0)'''
+
+#Builting the linear Regression Model
+
+from sklearn.linear_model import LinearRegression
+lr1=LinearRegression()
+lr1.fit(X,y)
+
+#building the polynomial regression model
+from sklearn.preprocessing import PolynomialFeatures
+pr1=PolynomialFeatures(degree=4)   #as we increase the degree we get abetter value but this works only for a while
+X_poly=pr1.fit_transform(X)
+lr2=LinearRegression()
+lr2.fit(X_poly,y)
+
+#visualising Linear Regression results
+plt.scatter(X,y,color='red')
+plt.plot(X,lr1.predict(X),color='blue')
+plt.title("Linear Regression")
+plt.xlabel('Position level')
+plt.ylabel('Salary')
+plt.show()
+
+#visualising Polynomial Linear Regression results
+'''X_grid=np.arrange(min(X),max(X),0.1)
+
+X_grid=X_grid.reshape((len(X_grid),1))'''
+plt.scatter(X,y,color='red')
+plt.plot(X,lr2.predict(pr1.fit_transform(X)),color='blue')
+plt.title("Polynomial Linear Regression")
+plt.xlabel('Position level')
+plt.ylabel('Salary')
+plt.show()
+
+
+#Predicting using LR
+print(lr1.predict([[6.5]]))
+#Predicting using pR
+print(lr2.predict(pr1.fit_transform([[6.5]])))

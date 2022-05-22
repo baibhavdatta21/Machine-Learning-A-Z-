@@ -1,0 +1,89 @@
+#Multiple Linear Regression 
+
+#importing libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+#importing our dataset
+dataset=pd.read_csv('50_Startups.csv')
+X=dataset.iloc[:,:-1].values
+y=dataset.iloc[:,4].values
+
+#Encoding Categorical Variables
+#Encoding the Independent Variable
+
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder
+le_X=LabelEncoder()
+X[:,3]=le_X.fit_transform(X[:,3])
+
+from sklearn.compose import ColumnTransformer
+columnTransformer = ColumnTransformer([('State', OneHotEncoder(), [3])],remainder='passthrough')
+X=np.array(columnTransformer.fit_transform(X))
+
+#avoiding dummy variable trap
+#for avoiding dummy variable trap we dont use the last column, ex-> if we have 3 dummy variable columns we take only 2, because 2 column are enough to tell me about the original row
+
+X=X[:, 1:] #Just not taking the 0th column and avoiding the dummy variable trap why the 0th column? look at the dataset
+
+
+#Splitting the dataset into training set and testing set
+from sklearn.model_selection import train_test_split
+(X_train,X_test,y_train,y_test)=train_test_split(X,y, test_size=0.2, random_state=0)  
+
+#Fitting Multiple Linear Regression to Training Set
+from sklearn.linear_model import LinearRegression
+regressor=LinearRegression() #object of the class linear regression
+regressor.fit(X_train, y_train)
+
+#Since here we have 4 variables affecting the fnal prediction we are not taking in the curves 
+#Just prdicting the final results
+y_pred=regressor.predict(X_test)
+
+#Building the optimal model using the Backward Elimination
+#why to use Backward Elimination?-----> it is good to have only the most significant features and keep our model simple to get the better result.
+
+import statsmodels.api as sm
+X = np.append(arr = np.ones((50,1)).astype(int), values=X, axis=1) 
+X_opt = X[:, [0, 1, 2, 3, 4, 5]]
+X_opt = X_opt.astype(np.float64)
+regressor_OLS = sm.OLS(y, X_opt).fit()
+regressor_OLS.summary()
+#If the P is above 0.05 we need to remove that 
+#thus doing this
+X_opt = X[:, [0, 1, 3, 4, 5]]
+X_opt = X_opt.astype(np.float64)
+regressor_OLS = sm.OLS(y, X_opt).fit()
+regressor_OLS.summary()
+
+X_opt = X[:, [0,3,5]]
+X_opt = X_opt.astype(np.float64)
+regressor_OLS = sm.OLS(y, X_opt).fit()
+regressor_OLS.summary()
+
+X_opt = X[:, [0,3]]
+X_opt = X_opt.astype(np.float64)
+regressor_OLS = sm.OLS(y, X_opt).fit()
+regressor_OLS.summary()
+
+#now we just built a simple regression model with the one column which affects our results
+#only R&D independent variable is giving us our significant results
+
+X1=dataset.iloc[:,0:1].values
+y1=dataset.iloc[:,4].values
+
+(X_train1,X_test1,y_train1,y_test1)=train_test_split(X1,y1, test_size=0.2, random_state=0) 
+reg=LinearRegression()
+reg.fit(X_train1,y_train1)
+y_pred2=reg.predict(X_test1)
+
+print("Model 1")
+print('Train Score: ', reg.score(X_train1, y_train1))  
+print('Test Score: ', reg.score(X_test1, y_test1))  
+print("Model 1:",reg.score(X_train1, y_train1)-reg.score(X_test1, y_test1))
+print('Train Score: ', regressor.score(X_train, y_train))  
+print('Test Score: ', regressor.score(X_test, y_test))  
+print("Model 1:",regressor.score(X_train, y_train)-regressor.score(X_test, y_test))
+
+#Model 1 has a higher accuracy
+#here we find a bit differt values ho
